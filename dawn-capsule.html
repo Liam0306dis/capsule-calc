@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dawn Capsule Calculator</title>
+<style>
+  :root {
+    --bg: #0c0c10; --panel: #14141b; --panel2: #1b1b24; --line: rgba(255,255,255,0.08);
+    --text: #e7e7ea; --dim: #9a9aa6; --faint: #6b6b78;
+    --accent: #f59bE1; --accent2: #c896ff; --gold: #fbbf24; --good: #4ade80;
+    --lit: #f59be1; --bound: #c896ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px; background: var(--bg); color: var(--text);
+    font-family: "Outfit", system-ui, -apple-system, sans-serif; line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; letter-spacing: 0.02em; }
+  .sub { color: var(--dim); font-size: 13px; margin: 0 0 20px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--faint); margin: 0 0 12px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 14px; }
+  .field { flex: 1 1 140px; min-width: 130px; }
+  label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 4px; }
+  input[type=number] {
+    width: 100%; padding: 7px 9px; background: var(--panel2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; font-size: 14px; font-family: inherit;
+    outline: none;
+  }
+  input[type=number]:focus { border-color: var(--accent2); }
+  .pets { display: flex; flex-direction: column; gap: 8px; }
+  .pet { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; }
+  .pet .sel { flex: 1 1 170px; min-width: 130px; }
+  .pet .num { flex: 0 0 80px; }
+  .pet .eff { flex: 0 0 96px; }
+  .pet .field { min-width: 0; margin: 0; }
+  .effval {
+    padding: 7px 9px; background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 8px; font-size: 14px; font-weight: 600; text-align: right;
+  }
+  .effval.light { color: var(--lit); } .effval.conv { color: var(--bound); }
+  select {
+    width: 100%; padding: 7px 9px; background: var(--panel2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; font-size: 13px; font-family: inherit;
+    outline: none; cursor: pointer;
+  }
+  select:focus { border-color: var(--accent2); }
+  input[disabled] { opacity: 0.65; }
+  .btn {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent2); background: #22222e; }
+  .btn.rm { padding: 6px 0; color: #f87171; }
+  .btn.add { margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--faint); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  th:first-child, td:first-child { text-align: left; }
+  tr.best td { background: rgba(74,222,128,0.08); }
+  tr.best td:first-child::after { content: " ★"; color: var(--good); }
+  .lit { color: var(--lit); } .bound { color: var(--bound); }
+  .big { font-size: 15px; font-weight: 700; }
+  .stat-row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 4px; }
+  .stat { }
+  .stat .v { font-size: 20px; font-weight: 700; }
+  .stat .l { font-size: 11px; color: var(--dim); }
+  .stat .v.accent { color: var(--accent); }
+  .bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 10px 0 4px; background: var(--panel2); }
+  .bar .e { background: #2a2a36; } .bar .l { background: var(--lit); } .bar .b { background: var(--bound); }
+  .legend { display: flex; gap: 16px; font-size: 11px; color: var(--dim); }
+  .legend span::before { content: "■ "; }
+  .note { font-size: 12px; color: var(--dim); margin-top: 10px; }
+  .mini { font-size: 11px; color: var(--faint); }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; font-size: 12px; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dawn Capsule Calculator</h1>
+  <p class="sub">Expected Magic Dawn capsules per Dawn from filler slots (Clover / ThunderCelestial), given your Dawnlit boost pets and capture cadence.</p>
+
+  <div class="card">
+    <h2>Farm &amp; Weather</h2>
+    <div class="row">
+      <div class="field">
+        <label>Filler slots</label>
+        <input type="number" id="slots" value="858" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Base Dawnlit %/min <span class="mini">(bundle: 1)</span></label>
+        <input type="number" id="base" value="1" min="0" step="0.1">
+      </div>
+      <div class="field">
+        <label>Base Lit→Bound %/min <span class="mini">(before Dawnbinder)</span></label>
+        <input type="number" id="conv" value="25" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Dawn length (min)</label>
+        <input type="number" id="dawnlen" value="10" min="1" step="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Team — 3 pets</h2>
+    <div class="pets" id="pets"></div>
+    <div class="note">Pick each pet's mutation ability (only ones that fire during Dawn are listed). Effect scales with strength: <b>ability% × (str / 100)</b>. Snow / Amber Moon / Thunder boosts don't apply during Dawn and aren't shown.</div>
+    <div class="row" style="margin-top:12px">
+      <div class="field" style="flex:0 0 220px">
+        <label>Override total boost % <span class="mini">(blank = use pets)</span></label>
+        <input type="number" id="override" placeholder="auto" min="0" step="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Per Dawn (capture at Dawn-end)</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="v accent" id="prate">–</div><div class="l">Dawnlit rate /min</div></div>
+      <div class="stat"><div class="v bound" id="qrate">–</div><div class="l">Lit→Bound rate /min</div></div>
+      <div class="stat"><div class="v" id="capsules">–</div><div class="l">capsules / Dawn (best cadence)</div></div>
+      <div class="stat"><div class="v" id="mutated">–</div><div class="l">slots mutated / Dawn</div></div>
+    </div>
+    <div class="bar" id="bar"><div class="e" style="width:100%"></div></div>
+    <div class="legend"><span style="color:#2a2a36">empty</span><span class="lit">lit (×1)</span><span class="bound">bound (×2)</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Capture cadence</h2>
+    <table id="cadence">
+      <thead><tr><th>Capture every</th><th>Empty</th><th class="lit">Lit</th><th class="bound">Bound</th><th>Capsules</th><th>Per Dawn</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note" id="cadence-note"></div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Conversion by lit-time — chance a slot reaches Bound by Dawn-end depending on which minute it lights up</summary>
+      <table id="conv-tbl" style="margin-top:10px">
+        <thead><tr><th>Lit at minute</th><th>Time left</th><th>P(Bound at capture)</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </details>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const petsEl = $('pets');
+
+// Dawn-relevant pet abilities (bundle 696). axis 'light' raises the Dawnlit
+// chance (p); axis 'conv' raises the Lit->Bound conversion rate (q, via the
+// DawnCelestial's binding ability).
+const ABILITIES = [
+  { key: 'none',   name: 'None / empty',                    pct: 0,   axis: 'light' },
+  { key: 'dawn',   name: 'Dawn Boost (36%)',                pct: 36,  axis: 'light' },
+  { key: 'wmb2',   name: 'Weather Mutation Boost II (20%)', pct: 20,  axis: 'light' },
+  { key: 'wmb1',   name: 'Weather Mutation Boost I (15%)',  pct: 15,  axis: 'light' },
+  { key: 'binder', name: 'Dawnbinder Boost (40%)',          pct: 40,  axis: 'conv'  },
+  { key: 'custom', name: 'Custom (Dawnlit)',                pct: null, axis: 'light' },
+];
+const abil = k => ABILITIES.find(a => a.key === k) || ABILITIES[0];
+const abilPct = k => abil(k).pct;
+
+// Fixed team of 3 slots.
+let pets = [
+  { key: 'dawn', str: 100, custom: 0 },
+  { key: 'dawn', str: 99,  custom: 0 },
+  { key: 'dawn', str: 99,  custom: 0 },
+];
+
+function petBoost(p) {
+  const base = p.key === 'custom' ? (p.custom || 0) : (abilPct(p.key) || 0);
+  return base * (p.str || 0) / 100;
+}
+
+function renderPets() {
+  petsEl.innerHTML = '';
+  pets.forEach((p, i) => {
+    const opts = ABILITIES.map(a =>
+      '<option value="' + a.key + '"' + (a.key === p.key ? ' selected' : '') + '>' + a.name + '</option>').join('');
+    const isCustom = p.key === 'custom';
+    const div = document.createElement('div');
+    div.className = 'pet';
+    let html =
+      '<div class="field sel"><label>Pet ' + (i+1) + ' ability</label>' +
+        '<select data-i="' + i + '" data-k="key">' + opts + '</select></div>';
+    if (isCustom) {
+      html += '<div class="field num"><label>Custom %</label>' +
+        '<input type="number" data-i="' + i + '" data-k="custom" value="' + p.custom + '" step="1" min="0"></div>';
+    }
+    const ax = abil(p.key).axis;
+    html += '<div class="field num"><label>Strength</label>' +
+        '<input type="number" data-i="' + i + '" data-k="str" value="' + p.str + '" step="1" min="0" max="100"></div>' +
+      '<div class="field eff"><label>Effective ' + (ax === 'conv' ? 'conv' : 'lit') + '</label>' +
+        '<div class="effval ' + ax + '">' + petBoost(p).toFixed(1) + '%</div></div>';
+    div.innerHTML = html;
+    petsEl.appendChild(div);
+  });
+  petsEl.querySelectorAll('[data-i]').forEach(el => {
+    el.addEventListener('input', e => {
+      const i = +e.target.dataset.i, k = e.target.dataset.k;
+      pets[i][k] = (k === 'key') ? e.target.value : (+e.target.value || 0);
+      renderPets(); compute();
+    });
+  });
+}
+
+['slots','base','conv','dawnlen','override'].forEach(id => $(id).addEventListener('input', compute));
+
+// Simulate k consecutive Dawns of accumulation (no capture between). Returns
+// [empty, lit, bound] fractions per slot. Continuous-time three-state chain:
+//   empty --p--> lit --q--> bound, integrated over Dawn minutes so a slot lit
+//   late has only its remaining time to convert.
+function accumulate(p, q, T, k) {
+  let E = 1, L = 0, B = 0, dt = 0.005;
+  for (let d = 0; d < k; d++)
+    for (let t = 0; t < T; t += dt) {
+      const dE = -p * E * dt, dL = (p * E - q * L) * dt, dB = q * L * dt;
+      E += dE; L += dL; B += dB;
+    }
+  return [E, L, B];
+}
+
+function compute() {
+  const N = +$('slots').value || 0;
+  const base = (+$('base').value || 0) / 100;   // per min fraction
+  const baseConv = (+$('conv').value || 0) / 100;
+  const T = +$('dawnlen').value || 10;
+  const ov = $('override').value.trim();
+  // Split pet boosts by axis: light -> Dawnlit rate p, conv -> Lit->Bound rate q.
+  const lightPct = pets.reduce((s, p) => s + (abil(p.key).axis === 'light' ? petBoost(p) : 0), 0);
+  const convPct  = pets.reduce((s, p) => s + (abil(p.key).axis === 'conv'  ? petBoost(p) : 0), 0);
+  const boostPct = ov !== '' ? (+ov || 0) : lightPct;
+  const p = base * (1 + boostPct / 100);
+  const q = baseConv * (1 + convPct / 100);
+
+  $('prate').textContent = (p * 100).toFixed(2) + '%';
+  $('qrate').textContent = (q * 100).toFixed(1) + '%';
+
+  // cadence table k = 1..4
+  const rows = [];
+  for (let k = 1; k <= 4; k++) {
+    const [E, L, B] = accumulate(p, q, T, k);
+    const caps = (L + 2 * B) * N;
+    rows.push({ k, E: E*N, L: L*N, B: B*N, caps, perDawn: caps / k });
+  }
+  const best = rows.reduce((a, b) => b.perDawn > a.perDawn ? b : a, rows[0]);
+
+  const tb = $('cadence').querySelector('tbody');
+  tb.innerHTML = rows.map(r =>
+    '<tr class="' + (r === best ? 'best' : '') + '">' +
+      '<td>' + r.k + ' Dawn' + (r.k > 1 ? 's' : '') + '</td>' +
+      '<td>' + Math.round(r.E) + '</td>' +
+      '<td class="lit">' + Math.round(r.L) + '</td>' +
+      '<td class="bound">' + Math.round(r.B) + '</td>' +
+      '<td>' + Math.round(r.caps) + '</td>' +
+      '<td class="big">' + Math.round(r.perDawn) + '</td>' +
+    '</tr>').join('');
+
+  // headline uses single-Dawn (what you get each Dawn if capturing every Dawn),
+  // but the "best cadence" figure shows the optimum per-Dawn throughput.
+  const one = rows[0];
+  $('capsules').textContent = Math.round(best.perDawn);
+  $('mutated').textContent = Math.round(one.L + one.B);
+
+  // bar for single Dawn
+  const tot = N || 1;
+  $('bar').innerHTML =
+    '<div class="e" style="width:' + (100 * one.E / tot) + '%"></div>' +
+    '<div class="l" style="width:' + (100 * one.L / tot) + '%"></div>' +
+    '<div class="b" style="width:' + (100 * one.B / tot) + '%"></div>';
+
+  const near = Math.abs(best.perDawn - one.perDawn) / (one.perDawn || 1) < 0.03;
+  $('cadence-note').innerHTML =
+    'Best cadence: <b>capture every ' + best.k + ' Dawn' + (best.k > 1 ? 's' : '') + '</b>' +
+    (near ? ' — but every-Dawn is within 3%, so cadence barely matters; capture every Dawn for simplicity/robustness.'
+          : ' gives a meaningful edge over capturing every Dawn.') +
+    '<br>Boost in use: <b>' + boostPct.toFixed(1) + '%</b>' + (ov !== '' ? ' (override)' : ' (from pets)') + '.';
+
+  // conversion-by-minute table
+  const ct = $('conv-tbl').querySelector('tbody');
+  let html = '';
+  for (let s = 0; s < T; s++) {
+    const rem = T - s;
+    html += '<tr><td>' + s + '</td><td>' + rem + ' min</td><td>' +
+      (100 * (1 - Math.exp(-q * rem))).toFixed(0) + '%</td></tr>';
+  }
+  ct.innerHTML = html;
+}
+
+renderPets();
+compute();
+</script>
+</body>
+</html>
