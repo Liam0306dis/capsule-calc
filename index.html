@@ -89,6 +89,50 @@
   .calc-link:hover { border-color: var(--accent2); }
   .calc-link b { display: block; font-size: 13px; margin-bottom: 3px; }
   .calc-link span { display: block; font-size: 11px; color: var(--dim); line-height: 1.35; }
+  @media (max-width: 520px) {
+    body { padding: 16px 10px; }
+    .card { padding: 14px 12px; }
+    .pet {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 58px 76px;
+      gap: 6px;
+      align-items: end;
+    }
+    .pet.custom { grid-template-columns: minmax(0, 1fr) 52px 52px 68px; }
+    .pet .sel, .pet .num, .pet .eff { min-width: 0; width: auto; }
+    .pet label { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pet select, .pet input[type=number], .pet .effval { padding: 7px 5px; font-size: 12px; }
+    #cadence thead { display: none; }
+    #cadence, #cadence tbody { display: block; }
+    #cadence tbody { display: grid; gap: 8px; }
+    #cadence tr {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #cadence td {
+      min-width: 0;
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      font-size: 12px;
+    }
+    #cadence td:nth-last-child(-n+3) { border-bottom: 0; }
+    #cadence td::before {
+      content: attr(data-label);
+      display: block;
+      color: var(--faint);
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+    #cadence td:first-child { text-align: right; }
+    #cadence tr.best td { background: rgba(74,222,128,0.08); }
+    #cadence tr.best td:first-child::after { content: ""; }
+  }
 </style>
 </head>
 <body>
@@ -211,7 +255,7 @@ function renderPets() {
       '<option value="' + a.key + '"' + (a.key === p.key ? ' selected' : '') + '>' + a.name + '</option>').join('');
     const isCustom = p.key === 'custom';
     const div = document.createElement('div');
-    div.className = 'pet';
+    div.className = 'pet' + (isCustom ? ' custom' : '');
     let html =
       '<div class="field sel"><label>Pet ' + (i+1) + ' ability</label>' +
         '<select data-i="' + i + '" data-k="key">' + opts + '</select></div>';
@@ -295,7 +339,7 @@ function compute() {
   const tb = $('cadence').querySelector('tbody');
   tb.innerHTML = rows.map(r =>
     '<tr class="' + (r === best ? 'best' : '') + '">' +
-      '<td>' + r.k + ' Dawn' + (r.k > 1 ? 's' : '') + '</td>' +
+      '<td data-label="Capture every">' + r.k + ' Dawn' + (r.k > 1 ? 's' : '') + '</td>' +
       '<td data-label="Empty">' + Math.round(r.E) + '</td>' +
       '<td data-label="Lit" class="lit">' + Math.round(r.L) + '</td>' +
       '<td data-label="Bound" class="bound">' + Math.round(r.B) + '</td>' +
