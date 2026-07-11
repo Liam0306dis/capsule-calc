@@ -62,6 +62,7 @@
   .btn:hover { border-color: var(--accent2); background: #22222e; }
   .btn.rm { padding: 6px 0; color: #f87171; }
   .btn.add { margin-top: 8px; }
+  .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th, td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--line); }
   th { color: var(--faint); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -295,11 +296,11 @@ function compute() {
   tb.innerHTML = rows.map(r =>
     '<tr class="' + (r === best ? 'best' : '') + '">' +
       '<td>' + r.k + ' Dawn' + (r.k > 1 ? 's' : '') + '</td>' +
-      '<td>' + Math.round(r.E) + '</td>' +
-      '<td class="lit">' + Math.round(r.L) + '</td>' +
-      '<td class="bound">' + Math.round(r.B) + '</td>' +
-      '<td>' + Math.round(r.caps) + '</td>' +
-      '<td class="big">' + Math.round(r.perDawn) + '</td>' +
+      '<td data-label="Empty">' + Math.round(r.E) + '</td>' +
+      '<td data-label="Lit" class="lit">' + Math.round(r.L) + '</td>' +
+      '<td data-label="Bound" class="bound">' + Math.round(r.B) + '</td>' +
+      '<td data-label="Capsules">' + Math.round(r.caps) + '</td>' +
+      '<td data-label="Per Dawn" class="big">' + Math.round(r.perDawn) + '</td>' +
     '</tr>').join('');
 
   // headline uses single-Dawn (what you get each Dawn if capturing every Dawn),
